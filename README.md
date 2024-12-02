@@ -16,7 +16,7 @@ Experiments show that when the number of nodes is larger than 20, FT-DAG provide
 
 
 This work also reproduces some variants of existing DAG generators as a control group, as follows:
-- GNM;
+- GNM^[https://www.baidu.com/];
 - LBL(layer-by-layer);
 - FIO(fan-in/fan-out);
 - SoTA(state of the art):
