@@ -13,3 +13,10 @@ FT-DAG is an efficient and formally verified full-topology DAG generator that is
 - the number of edges: _md, _mu;
 
 Experiments show that when the number of nodes is larger than 20, FT-DAG provides at least two orders of magnitude speedup compared to the state of the art and more orders to other generators. FT-DAG scales to 100 nodes in a typical industrial case study within hours.
+
+
+This work also reproduces some variants of existing DAG generators as a control group, as follows:
+- GNM;
+- LBL(layer-by-layer);
+- FIO(fan-in/fan-out);
+- SoTA(state of the art):
