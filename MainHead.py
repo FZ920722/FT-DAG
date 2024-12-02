@@ -86,6 +86,19 @@ def __data_file_input(_gtype, _tpath):
 # ########################################################################
 # 1 - DAG 数据IO
 # #######################################################################
+
+def __exam_pic_Output(_dag, _fname):
+    dot = gz.Digraph()
+    dot.attr(rankdir='LR')
+    for node_x in _dag.nodes(data=True):
+        temp_label = f'{node_x[0]}'
+        temp_node_dict = node_x[1]
+        dot.node('%s' % node_x[0], temp_label, color='black', shape='box')
+    for edge_x in _dag.edges():
+        dot.edge('%s' % edge_x[0], '%s' % edge_x[1])
+    dot.render(filename= f'{_fname}.png', format="png", view=False)
+
+
 def Matrix_Encoding(_Matrix):
     return np.packbits(_Matrix)
 

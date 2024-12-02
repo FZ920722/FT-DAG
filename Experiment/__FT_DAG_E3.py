@@ -6,7 +6,9 @@
 # Hunan University HNU
 # Fang YJ
 # # # # # # # # # # # # # # # #
-
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from MainHead import *
 global TIMES, TIME_SCS, TIME_MS, TIME_MC, DBCONN, TCONN, TCURS, FTable, NNUM
 TIMES, TIME_SCS, TIME_MS, TIME_MC = 0, 0, 0, 0
@@ -185,7 +187,7 @@ def __DB_Data(_shash, _s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu
 
 
 def NC(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, _wu:int, _ms:bool=True, _mc:bool=True):
-    global NNUM, TIME_SCS, TIME_MS, TIME_MC, N_SCS, N_MS, N_MC
+    global TIME_SCS, TIME_MS, TIME_MC, N_SCS, N_MS, N_MC
     # (1) 基于shape的 参数配置：
     __n, __l, __nid, __nod  = sum(_s), len(_s), 0, 0
     __njl,  __nhl           = min(MaxJl(_s), _jl),  max(MinHl(_s), _hl)
@@ -209,8 +211,7 @@ def NC(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, 
         if (__n == 1) or (__n > 3 and _s[0] > 1 and __l > 1 and __nid > 1):
             for __rd in __DB_Data(__shash, _s, __nid, __nod, __njl, __nhl, __nmd, __nmu, __nwd, __nwu, 'SCS'):
                 yield __rd
-                if NNUM == __n:
-                    N_SCS += 1
+
         # if NNUM == __n:
         TIME_SCS += time.time() - scst
             
@@ -220,8 +221,7 @@ def NC(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, 
         if _mc and _s[0] > 1:
             for __rd in __DB_Data(__shash, _s, __nid, __nod, __njl, __nhl, __nmd, __nmu, __nwd, __nwu, 'MC'):
                 yield __rd
-                if NNUM == __n:
-                    N_MC += 1
+
         # if NNUM == __n:
         TIME_MC += time.time() - mct
 
@@ -231,8 +231,6 @@ def NC(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, 
         if _ms and __l > 1:
             for __rd in __DB_Data(__shash, _s, __nid, __nod, __njl, __nhl, __nmd, __nmu, __nwd, __nwu, 'MS'):
                 yield __rd
-                if NNUM == __n:
-                    N_MS += 1
         # if NNUM == __n:
         TIME_MS += time.time() - mst
 
@@ -627,310 +625,52 @@ def FC(_pd, _sd):
     return __td
 
 
-
-def __exam_pic_Output(_dag, _fname):
-    dot = gz.Digraph()
-    dot.attr(rankdir='LR')
-    for node_x in _dag.nodes(data=True):
-        temp_label = f'{node_x[0]}'
-        temp_node_dict = node_x[1]
-        dot.node('%s' % node_x[0], temp_label, color='black', shape='box')
-    for edge_x in _dag.edges():
-        dot.edge('%s' % edge_x[0], '%s' % edge_x[1])
-    dot.render(filename= f'{_fname}.png', format="png", view=False)
-
-
+_x = 4
 if __name__ == "__main__":
-    # global NNUM
     RootPath = os.path.join(os.getcwd(), 'BASIC_DAG_DATA')
     print(f"Current time:{datetime.now()}--CPU_NUM:{cpu_count()}\n")
     print(f"Root path:{RootPath}")
-
-    # (1) 数据库更新；
-    ROOT_DB_ADDR,   Table_Name  = './BDAG.db',      'DagData'
+    FADDR, FTable = './TCDATA.db', 'Total'
+    ROOT_DB_ADDR, Table_Name  = './BDAG.db', 'DagData'
     # if os.path.exists(ROOT_DB_ADDR):
-    #     os.remove(ROOT_DB_ADDR)  
+    #     os.remove(ROOT_DB_ADDR) 
     target_connection = sqlite3.connect(ROOT_DB_ADDR)
     target_cursor = target_connection.cursor()
-
-    FADDR,          FTable      = './TCDATA.db',    'Total'
     if os.path.exists(FADDR):
         os.remove(FADDR)  
     TCONN = sqlite3.connect(FADDR)    
     TCONN.row_factory = sqlite3.Row
     TCURS = TCONN.cursor()
-
     TCURS.execute(f"DROP TABLE IF EXISTS {FTable};")
     TCURS.execute(f'''CREATE TABLE IF NOT EXISTS {FTable} (ts BLOB PRIMARY KEY, wd INTEGER NOT NULL,
                         wu INTEGER NOT NULL, md INTEGER NOT NULL, mu INTEGER NOT NULL, jl INTEGER NOT NULL,
                         hl INTEGER NOT NULL, id INTEGER NOT NULL, od INTEGER NOT NULL, L  INTEGER NOT NULL);''')
     # """ 验证算法：
-    for __nnum in range(3, 11):
+    for __nnum in range(3, 100):
         new_data = defaultdict(int)
-        print("################################")
+        # print("################################")
 
-        NNUM = __nnum
-        # for _idx in range(__nnum): 
-        for _idx in range(1): 
-            _idx = __nnum - 1
+        # 实验 3：
+        _hlx, _jlx = 1, max(0, __nnum - 1)
+        _mdx, _mux = 0, int(pow(__nnum, 2) / 4)
+        _wdx, _wux = 1, __nnum
+        _sdx, _sux = 1, __nnum 
+        _ldx, _lux = max(1, __nnum - _x), __nnum
 
-            # for _odx in range(__nnum):
-            for _odx in range(1):
-                _odx = __nnum - 1
-
-                # for _jlx in range(__nnum - 1):
-                for _jlx in range(1):
-                    _jlx = max(0, __nnum - 1)
-
-                    # for _hlx in range(1, __nnum + 1):
-                    for _hlx in range(1):   
-                        _hlx = 1
-
-                        # for _mux in range(int(pow(__nnum, 2) / 4) + 1):
-                        for _mux in range(1):
-                            _mux = int(pow(__nnum, 2) / 4)
-
-                            # for _mdx in range(_mux + 1):
-                            for _mdx in range(1):
-                                _mdx = 0
-
-                                # for _wux in range(1, __nnum):
-                                for _wux in range(1):
-                                    _wux = __nnum
-
-                                    # for _wdx in range(1, _wux + 1):
-                                    for _wdx in range(1):
-                                        _wdx = 1
-                                        
-                                        dag_num, shape_num = 0, 0
-                                        # _ldx, _lux = __nnum - _wdx + 1, __nnum - _wux + 1   
-                                        _ldx, _lux = 1, __nnum
-                                        _sdx, _sux = 1, min(__nnum, _wux)
-                                        print(f"n:{__nnum}, id:{_idx}, od:{_odx}, jl:{_jlx}, hl:{_hlx}, md:{_mdx}, mu:{_mux}, wd:{_wdx}, wu:{_wux}")
-                                        st = time.time()
-   
-                                        for __s in NSG(__nnum, (_ldx, _lux), (_sdx, _sux), (_mdx, _mux), _idx, _odx):
-                                            shape_num += 1        
-                                            for __gx in NC(__s, _idx, _odx, min(MaxJl(__s), _jlx), _hlx, _mdx, _mux, _wdx, _wux, _ms=True, _mc=True):
-                                                dag_num += 1
-                                                _sub_shape = __gx.graph['s']
-                                                new_data[_sub_shape] += 1
-
-                                                re_rank_list = [sorted(__gxin) for __gxin in nx.topological_generations(nx.DiGraph.reverse(__gx))]                                                
-                                                re_rank_list.reverse()
-                                                _sub_rshape = tuple(len(x) for x in re_rank_list)
-                                                new_data[(_sub_shape, _sub_rshape)] += 1
-                                                pass
-                                                # （1） 计算shape；
-                                                # （2） 计算re-shape；
-                                                # （3） 归类计数
-                                                # __GX 是否有等价节点                                                
-                                                # ex_list = set(__nd['Equ'] for __ni, __nd in __gx.nodes(data=True))
-                                                # if len(ex_list) == __nnum:
-                                                    # dag_num += 1
-                                                # (2) 等价类
-                                                __equ_list = set((frozenset(__gx.predecessors(_ni)) , frozenset(__gx.successors(_ni))) for _ni in __gx.nodes())
-                                                # if len(__equ_list) == __nnum:
-                                                #     print(__gx.edges())
-                                                #     dag_num += 1
-                                                
-                                                # __autn = pn.autgrp(pn.Graph(__gx.number_of_nodes(), directed=True, adjacency_dict=nx.to_dict_of_lists(__gx)))[4]
-                                                # if __autn == __nnum:
-                                                    # dag_num += 1
-
-                                        et = time.time()
-                                        print(f"算法生成_{__nnum}-----{shape_num}----{dag_num}--{et - st:.6f}----{(et - st) / max(1, dag_num):.6f}")
-                                        # for __xddi, __xddd in new_data.items():
-                                            # print(f"{__xddd}_{__xddi}")
-                                        print(max(new_data.values()))
-                                        """
-                                        target_cursor.execute(f'SELECT COUNT(*) FROM {Table_Name} WHERE n = {__nnum}  AND od <= {_odx} AND id <= {_idx} AND jl <= {_jlx} AND hl >= {_hlx} AND m >= {_mdx} AND {_mux} >= m AND w >= {_wdx} AND {_wux} >= w;')
-                                        db_dag_num =target_cursor.fetchall()[0][0]
-                                        print(db_dag_num)
-                                        try:
-                                            assert dag_num == db_dag_num
-                                        except:
-                                            print(f"********n:{__nnum},id:{_idx},od:{_odx},jl:{_jlx},hl:{_hlx},md:{_mdx},mu:{_mux},wd:{_wdx},wu:{_wux}")
-                                            target_cursor.execute(f'SELECT dag FROM {Table_Name} WHERE n = {__nnum} AND  od <= {_odx} AND id <= {_idx} AND jl <= {_jlx} AND hl >= {_hlx} AND m >= {_mdx} AND {_mux} >= m AND w >= {_wdx} AND {_wux} >= w;')
-                                            for __db_data in target_cursor.fetchall():
-                                                __ttdag = pickle.loads(__db_data[0])
-                                                print(f"\t{__ttdag.edges()}")
-                                            assert False
-                                        """
-    # """
-    """
-    lxx = 3
-    for _n in range(3, 100):
-        NNUM, dag_num, shape_num = _n, 0, 0
-        # （1）参数配置：
-        # 1. id/od id关系不大 od重相关
-        _id, _od = 1,                   2
-        # _id, _od = _n - 1,              _n - 1
-        _id, _od = min(_id, _n - 1),    min(_od, _n - 1)
-
-        # 2. jl/hl:
-        # _jl, _hl = 1,                   1
-        _jl, _hl = _n - 1,              1
-        _jl, _hl = min(_jl, _n - 2),    max(_hl, 1)
-
-        # 3. wd/wu: # math.ceil(__nnum * 3/ 4)  
-        #  nnum - _lx + 1   # wd <= n - l + 1  ->   l <= n - wd + 1
-        # _wd, _wu = 1,                   _n
-        _wd, _wu = 1,                   max(1, _n - lxx)
-        _wd, _wu = max(_wd, 1),         min(_wu, _n)
-
-        # 4. md/mu:
-        # _md, _mu = 0,                   int(pow(_n, 2) / 4)
-        _md, _mu = 0,                   _n
-        _md, _mu = max(_md, 0),         min(_mu, int(pow(_n, 2) / 4))
-
-        # 5. ld/lu:
-        _ld, _lu = 1,                   lxx # int(_n / 2)#    max(1, int(_n))
-        # _ld, _lu = 1,                    math.ceil(math.log2(_n + 1)) + 3 #math.ceil(pow(_n, 1/2))
-        # _ld, _lu = math.ceil(math.log2(_n + 1)), math.ceil(math.log2(_n + 1)) #math.ceil(pow(_n, 1/2))
-        # _ld, _lu = 1,                   _n
-        _ld, _lu = max(1, _ld, _hl),    min(_lu, _n, _n - _wd + 1)
-
-        # 6. sd/su:
-        # _sd, _su = 1,                   _n
-        _sd, _su = 1,                   max(1, _n - lxx)
-        _sd, _su = max(_sd, 1),         min(_su, _n)
-
-        # print(f"n:{_n}, ld:{_ld}, lu:{_lu}, id:{_id}, od:{_od}, jl:{_jl}, hl:{_hl}, md:{_md}, mu:{_mu}, wd:{_wd}, wu:{_wu}")
+        _idx, _odx = 1, 2
+        dag_num, shape_num = 0, 0
+        # print(f"n:{__nnum}, id:{_idx}, od:{_odx}, jl:{_jlx}, hl:{_hlx}, md:{_mdx}, mu:{_mux}, wd:{_wdx}, wu:{_wux}")
         st = time.time()
-        # for __s in TempShape(__nnum, _max_s, ld, lu , sd, su,_idx, _odx):
-        for __s in NSG(_n, (_ld, _lu), (_sd, _su), (_md, _mu), _id, _od):
-        # for __s in BSG(_n - 1, 1):
-        # for __s in CSG(_n - 1, 1):
-            # __s = (1, ) + __s
-            # _hl = len(__s)
-            shape_num += 1
-            # print(f"\t{__s}")
-            # （2）基于shape的参数分析；
-
-            for __gx in NC(__s, _id, _od, _jl, _hl, _md, _mu, _wd, _wu, _ms=True, _mc=True):
-                # print(__gx.edges())    
-                # for __i, __d in __gx.nodes(data=True):
-                #     print(f"\t{__i}_{__d}")
-                #     assert __d['P'] == set(__gx.predecessors(__i)) and __d['S'] == set(__gx.successors(__i))
+        for __s in NSG(__nnum, (_ldx, _lux), (_sdx, _sux), (_mdx, _mux), _idx, _odx):
+            shape_num += 1        
+            for __gx in NC(__s, _idx, _odx, min(MaxJl(__s), _jlx), _hlx, _mdx, _mux, _wdx, _wux, _ms=True, _mc=True):
                 dag_num += 1
-                # __exam_pic_Output(__gx, f'{_n}_{dag_num}')
-                # param_detec(__gx)
-                # __rd_list.append(NCDA(__gx))
 
         et = time.time()
-        print(f"算法生成_{_n}-----{shape_num}----{dag_num}----{et - st:.6f}----{(et - st) / max(1, dag_num):.6f}")
-        # print(f"\t{TIME_SCS:.2f}___{TIME_MC:.2f}___{TIME_MS:.2f}____test:{TIMES:.2f}")
-        # print(f"\t{N_SCS:.2f}___{N_MC:.2f}___{N_MS:.2f}")
-        TIME_SCS, TIME_MC, TIME_MS, TIMES, TIMES2, N_SCS, N_MC, N_MS, N_N = 0, 0, 0, 0, 0, 0, 0, 0, 0
-    """
-        # target_cursor.execute(f'SELECT COUNT(*) FROM {Table_Name} WHERE n = {_n}  AND od <= {_od} AND id <= {_id} AND jl <= {_jl} AND hl >= {_hl} AND m >= {_md} AND {_mu} >= m AND w >= {_wd} AND {_wu} >= w;')
-        # db_dag_num =target_cursor.fetchall()[0][0]
-        # print(db_dag_num)
-        # try:
-        #     assert dag_num == db_dag_num
-        # except:
-        #     print(f"********n:{_n},id:{_id},od:{_od},jl:{_jl},hl:{_hl},md:{_md},mu:{_mu},wd:{_wd},wu:{_wu}")
-        #     # target_cursor.execute(f'SELECT COUNT(*) FROM {Table_Name} WHERE n = {_n}  AND od <= {_od} AND id <= {_id} AND jl <= {_jl} AND hl >= {_hl} AND m >= {_md} AND {_mu} >= m AND w >= {_wd} AND {_wu} >= w;')
-        #     target_cursor.execute(f'SELECT dag FROM {Table_Name} WHERE n = {_n} AND  od <= {_od} AND id <= {_id} AND jl <= {_jl} AND hl >= {_hl} AND m >= {_md} AND {_mu} >= m AND w >= {_wd} AND {_wu} >= w;')
-        #     for __db_data in target_cursor.fetchall():
-        #         __ttdag = pickle.loads(__db_data[0])
-        #         print(f"\t{__ttdag.edges()}")
-        #     assert False
+        print(f"算法生成_{__nnum}-----{shape_num}----{dag_num}--{et - st:.6f}----{(et - st) / max(1, dag_num):.6f}")
 
     TCURS.close()
     target_cursor.close()
     target_connection.commit()
     target_connection.close()
 
-# """
-#   retdata.append({'n':__nnum, 'dn':dag_num, 'gt':et - st})
-# __dfx = pd.DataFrame(retdata)
-# __dfx.to_csv(f'/home/fyj/{__nnum}data.csv')
-# __dfx.to_csv('w1.csv', index=False,  header=False, mode='a')
-# __dfx.to_sql(name=Table_Name, con=target_connection, index=False, if_exists='append')
-
-# pd.DataFrame([{'nn':__nnum, 'dn':dag_num, 'su':_max_s, 'ct': et - st}]).to_csv(f'l_{_lx}.csv', index=False,  header=False, mode='a')
-# pd.DataFrame([{'ts':__tname, 'wd': _wd, 'wu': _wu, 'md': _md, 'mu': _mu, 'jl': _jl, 'hl': _hl, 'id': _id, 'od': _od, 'L': 0}]).to_sql(name=FTable, con=TCONN, index=False, if_exists='append')
-
-# def TCD(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, _wu:int,
-#         _mc:bool, _ms:bool):
-#     if _mc and _ms:
-#         __n, __l = sum(_s), len(_s)
-#         __max_id =  0 if __l == 1 else (__n - _s[-1]) - (__l - 1) + 1
-#         if __max_id <= _id:                 # (1) id 判定：
-#             __max_od =  0 if __l == 1 else (__n - _s[0]) - (__l - 1) + 1
-#             if __max_od <= _od:             # (2) od 判定；
-#                 if MaxJl(_s) <= _jl:        # (3) jl 判定；最大值；长度 减去 最小的非1index e.g. [2,1,1]   jl = 3 - 1 = 2
-#                     if _hl <= MinHl(_s):    # (4) hl 判定；
-#                         if _md <= __n - _s[0] <= int(pow(__n, 2) / 4) <= _mu:   # (5) m 判定；
-#                             if _wd <= max(_s) <= __n - __l + 1 <= _wu:          # (6) w 判定；
-#                                 return True
-#     return False
-# elif __nwd <= __red['wd'] <=__red['wu'] <= __nwu and __red['id'] <= __nid and \
-#      __nmd <= __red['md'] <=__red['mu'] <= __nmu and __red['od'] <= __nod and \
-#      __red['jl'] <= __njl and __red['hl'] >= __nhl :
-#     __db_label = 1  # 被包含-算法
-#     print(_s)
-#     print(__red)
-#     _idata1 = {'s':__shash, 'wd': _wd, 'wu': _wu, 'md': _md, 'mu': _mu, 'jl': _jl,'hl': _hl, 'id': _id, 'od': _id, 'MC': 0, 'MS': 0, 'SCS': 0}
-#     print(f"{_idata1}")
-#     _idata2 = {'s':__shash, 'wd': __nwd, 'wu': __nwu, 'md': __nmd, 'mu': __nmu, 'jl': __njl,'hl': __nhl, 'id': __nid, 'od': __nod, 'MC': 0, 'MS': 0, 'SCS': 0}
-#     print(f"{_idata2}")
-# pd.DataFrame([{'nn':__nnum, 'dn':dag_num, 'su':_max_s, 'ct': et - st}]).to_csv(f'l_{_lx}.csv', index=False,  header=False, mode='a')
-        
-# # (**)参数检测
-# def param_detec(_tdag):
-#     # (1) shape 检测；
-#     __ddata = dict()
-#     __shape = tuple()
-#     for __da, __ns in enumerate(nx.topological_generations(_tdag), start=1):
-#         __shape += (len(__ns),)
-#         for __ni in __ns:
-#             assert _tdag.nodes[__ni]['d'] == __da
-#             __ddata[__ni] = __da
-#     assert _tdag.graph['s'] == __shape
-
-#     # (2) id / od 检测：
-#     __idns, __odns = list(), list()
-#     for __ni, __nd in _tdag.nodes(data=True):
-#         __tid = _tdag.in_degree(__ni) 
-#         __tod = _tdag.out_degree(__ni) 
-#         assert len(__nd['P']) == __tid
-#         assert len(__nd['S']) == __tod
-#         __idns.append(__tid)
-#         __odns.append(__tod)
-
-#     assert _tdag.graph['id'] == max(__idns)
-#     assert _tdag.graph['od'] == max(__odns)
-
-#     # (3) Jump/Hang level
-#     __snd = set()
-#     for __ni, __nd in _tdag.nodes(data=True):
-#         if _tdag.out_degree(__ni) == 0:
-#             __snd.add(__ddata[__ni])
-#     assert _tdag.graph['hl'] == min(__snd)
-
-#     __end = set()
-#     for __ex, __ey in _tdag.edges():
-#         __end.add(__ddata[__ey] - __ddata[__ex])
-#     if _tdag.number_of_edges() == 0:
-#         assert _tdag.graph['jl'] == 0
-#     else:
-#         assert _tdag.graph['jl'] == max(__end)
-
-#     # (4) edges and width
-#     assert _tdag.graph["m"] == _tdag.number_of_edges()
-#     assert _tdag.graph["w"] == DagWidth(_tdag, set())   # _tdag.number_of_edges()
-
-# def dag_gen_processs(_s:tuple, _id:int, _od:int, _jl:int, _hl:int, _md:int, _mu:int, _wd:int, _wu:int):
-#     __gen_dag_num = 0
-#     for __gx in NC(_s, _idx, _odx, _jlx, _hlx, _mdx, _mux, _wdx, _wux, _ms=True, _mc=True):
-#         __gen_dag_num += 1
-#     __et1 = time.time()
-#     return __gen_dag_num, _s
-# print(f"node_num:{__nnum}\t-time:{et - st:.2f}\t-dag_num:{sum([__futurex.result() for __futurex in __ffutures])}")
-# for __futurex in __ffutures:
-    # print(f"shape:{__futurex.result()[1]}\t-dag_num:{sum([__futurex.result()[0]])}")
-# __dataff.append({'n':__ffuture.result()[0], 's':tuple(__ffuture.result()[1])})
-# __ffutures.append(__ffuture)

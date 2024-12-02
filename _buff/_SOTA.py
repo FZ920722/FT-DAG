@@ -8,10 +8,15 @@
 # Real-Time Systems Group
 # Hunan University HNU
 # # # # # # # # # # # # # # # #
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from MainHead import *
+# import os
+# import sys
+import time
+import math
+import copy
+import networkx as nx
+from itertools import permutations, combinations, combinations_with_replacement
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from MainHead import *
 # from MainFrame import *
 
 def NSG(_n: int, _lr: tuple, _sr: tuple, _mr: tuple, _id:int, _od:int, _Xs:int=0):
@@ -346,31 +351,35 @@ def width_of_dag(_cdag):
 
 
 if __name__ == "__main__":
-
-    for nnum in range(3, 10):  # node_num = n + 2
+    for nnum in range(3, 20):  # node_num = n + 2
         s_num, dag_num = 0, 0
-        cc = defaultdict(int)
         st = time.time()
-        _x = 3
-        _wdx, _wux = _x, _x
-        ld, lu = nnum - _x + 1, nnum - _x + 1
+        # for shape in temp_shape(nnum, nnum - 2):
+        # for shape in Shape_Enumerate(nnum, nnum - 2, None):
+        # for shape in shape_generation(nnum, (1, nnum), (1, nnum)):
+        # for __s in TempShape(__nnum, __nnum - 2):
+        # for __s in TempShape(__nnum, __nnum - 1, _idx, _odx):
+        # for __s in SG(__nnum, (__nnum - 1, __nnum), (1, __nnum), _idx, _odx):
+        # for __s in SG(__nnum, (ld, lu), (sd, su), _idx, _odx):
+        # for shape in SG(nnum, (1, nnum), (1, nnum), nnum, nnum):
+        #   shape = (1,) + shape + (1,)
+        # _wdx, _wux = 0, math.ceil(pow(nnum, 1/2))
+        # _wdx, _wux =  math.ceil(pow(nnum, 1/2)), math.ceil(pow(nnum, 1/2))
+        _wdx, _wux = 1, 3 # nnum
+        ld, lu = 1, min(nnum - _wux + 1, nnum) 
         sd, su = 1, min(nnum, _wux)
-        for __s in NSG(nnum, (ld, lu), (sd, su), (0, int(pow(nnum, 2) / 4)), nnum - 1, nnum - 1):                                 
-            assert sd <= max(__s) <= su, ld <= len(__s) <= lu
-            __s = (1,) + __s + (1,)
+        for __s in NSG(nnum, (ld, lu), (sd, su), (0, int(pow(nnum, 2) / 4)), nnum - 1, nnum - 1):
+        # for __s in NSG(nnum, (ld, lu), (sd, su), (0, nnum), nnum - 1, nnum - 1):
+            # __s = (1,) + __s + (1,)
             s_num += 1
-
             for dagx in gen_mine_new(__s):
-
                 cdagx = nx.transitive_closure_dag(dagx)  
                 w_dag = width_of_dag(cdagx)
-                # w_dag = max([len(__x) for __x in nx.antichains(dagx)])
                 if _wdx <= w_dag <= _wux:
+                    # print(cdagx.edges())
                     dag_num += 1
-                    cc[max(__s)] += 1
 
         et = time.time()
-        print(cc)
         print(f"{nnum}_\t{s_num}_\t{dag_num}_\t{et - st :.8f}")
 
 # G = nx.DiGraph([(0, 1), (0, 2), (1, 3), (4, 5), (4, 6)])
