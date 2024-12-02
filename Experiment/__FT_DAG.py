@@ -626,6 +626,7 @@ def FC(_pd, _sd):
 
 
 
+
 if __name__ == "__main__":
     RootPath = os.path.join(os.getcwd(), 'BASIC_DAG_DATA')
     print(f"Current time:{datetime.now()}--CPU_NUM:{cpu_count()}\n")
@@ -650,13 +651,15 @@ if __name__ == "__main__":
         new_data = defaultdict(int)
         # print("################################")
 
-        # 实验 3：
-        _sdx, _sux = 1, __nnum
-        _ldx, _lux = 1, __nnum
+        # 实验 4：
+        _x = 3
         _hlx, _jlx = 1, max(0, __nnum - 1)
-        _mdx, _mux = 1, __nnum # int(pow(__nnum, 2) / 4)
-        _wdx, _wux = 1, __nnum
-        _idx, _odx =  __nnum - 1, __nnum - 1
+        _idx, _odx = __nnum - 1, __nnum - 1
+        _mdx, _mux = 0, int(pow(__nnum, 2) / 4)
+        _wdx, _wux = _x, _x
+        _sdx, _sux = 1, __nnum 
+        _ldx, _lux = __nnum - _x + 1, __nnum - _x + 1
+
         dag_num, shape_num = 0, 0
         # print(f"n:{__nnum}, id:{_idx}, od:{_odx}, jl:{_jlx}, hl:{_hlx}, md:{_mdx}, mu:{_mux}, wd:{_wdx}, wu:{_wux}")
         st = time.time()
@@ -666,9 +669,10 @@ if __name__ == "__main__":
                 dag_num += 1
 
         et = time.time()
-        print(f"算法生成_{__nnum}-----{shape_num}----{shape_num}----{dag_num}--{et - st:.6f}----{(et - st) / max(1, dag_num):.6f}")
+        print(f"算法生成_{__nnum}-----{shape_num}----{dag_num}--{et - st:.6f}----{(et - st) / max(1, dag_num):.6f}")
 
     TCURS.close()
     target_cursor.close()
     target_connection.commit()
     target_connection.close()
+
