@@ -1,13 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# # # # # # # # # # # # # # # # 
-# Randomized DAG Generator
-# Create Time: 2023/9/1311:50
-# Fang YJ
-# Real-Time Systems Group
-# Hunan University HNU
-# # # # # # # # # # # # # # # #
+
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
