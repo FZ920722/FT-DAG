@@ -1,13 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# # # # # # # # # # # # # # # #
-# Real-Time Systems Group
-# Hunan University HNU
-# Fang YJ
-# # # # # # # # # # # # # # # #
-
-
 """
 ###################################
 主 头文件整理；
