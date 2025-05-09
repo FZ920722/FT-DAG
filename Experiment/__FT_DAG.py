@@ -1,11 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# # # # # # # # # # # # # # # #
-# Real-Time Systems Group
-# Hunan University HNU
-# Fang YJ
-# # # # # # # # # # # # # # # #
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
