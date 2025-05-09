@@ -1,13 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# # # # # # # # # # # # # # # #
-# Create Time: 2023/9/1317:42
-# Fang YJ
-# Real-Time Systems Group
-# Hunan University HNU
-# # # # # # # # # # # # # # # #
-
 from MainHead import *
 
 def __dag_gnp(_n, _p):
